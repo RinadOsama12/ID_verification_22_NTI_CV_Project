@@ -86,10 +86,9 @@ def predict_id(image_bytes):
             continue
 
 
-        # ----------------------------------------------
+        
         # Face
-        # ----------------------------------------------
-
+        
         if class_id in FACE_CLASSES:
 
             face_crops.append(
@@ -97,9 +96,9 @@ def predict_id(image_bytes):
             )
 
 
-        # ----------------------------------------------
+        
         # Name
-        # ----------------------------------------------
+        
 
         elif class_id in NAME_CLASSES:
 
@@ -108,10 +107,9 @@ def predict_id(image_bytes):
             )
 
 
-        # ----------------------------------------------
+        
         # Address
-        # ----------------------------------------------
-
+        
         elif class_id in ADDRESS_CLASSES:
 
             address_crops.append(
@@ -119,9 +117,9 @@ def predict_id(image_bytes):
             )
 
 
-        # ----------------------------------------------
+        
         # ID Number
-        # ----------------------------------------------
+        
 
         elif class_id in NUMBER_CLASSES:
 
@@ -130,9 +128,9 @@ def predict_id(image_bytes):
             )
 
 
-    # --------------------------------------------------
+    
     # No face
-    # --------------------------------------------------
+    
 
     if not face_crops:
 

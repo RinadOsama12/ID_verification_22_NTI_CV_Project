@@ -26,7 +26,7 @@ async def verify_face(
 
     try:
 
-        # -------------------------
+        
         # 1. Read ID
         # -------------------------
 
@@ -39,7 +39,7 @@ async def verify_face(
                 "message": "ID image is empty"
             }
 
-        # -------------------------
+        
         # 2. YOLO
         # -------------------------
 
@@ -52,7 +52,7 @@ async def verify_face(
                 "message": yolo_result["message"]
             }
 
-        # -------------------------
+        
         # 3. Read selfie
         # -------------------------
 
@@ -82,7 +82,7 @@ async def verify_face(
                 "message": "Could not decode selfie image"
             }
 
-        # -------------------------
+        
         # 4. Face verification
         # -------------------------
 
@@ -95,7 +95,7 @@ async def verify_face(
     yolo_result["address_crops"],
     yolo_result["number_crops"]
 )
-        # -------------------------
+        
         # 5. Response
         # -------------------------
 
