@@ -7,7 +7,7 @@ from app.face_verification import verify_faces
 import cv2
 import numpy as np
 
-
+from app.ocr import extract_id_information
 app = FastAPI()
 
 
@@ -90,19 +90,28 @@ async def verify_face(
             yolo_result["id_crop"],
             selfie_image
         )
-
+        ocr_result = extract_id_information(
+    yolo_result["name_crops"],
+    yolo_result["address_crops"],
+    yolo_result["number_crops"]
+)
         # -------------------------
         # 5. Response
         # -------------------------
 
         return {
-            "verified": result["verified"],
-            "id_detected": True,
-            "face_distance": result["distance"],
-            "threshold": result["threshold"],
-            "yolo_confidence": yolo_result["confidence"]
-        }
+    "verified": result["verified"],
+    "id_detected": True,
 
+    "face_distance": result["distance"],
+    "threshold": result["threshold"],
+
+    "yolo_confidence": yolo_result["confidence"],
+
+    "name": ocr_result["name"],
+    "address": ocr_result["address"],
+    "id_number": ocr_result["id_number"]
+}
     except FaceNotDetected:
 
         return {

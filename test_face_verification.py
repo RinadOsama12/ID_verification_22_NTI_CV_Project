@@ -4,9 +4,9 @@ from app.model import predict_id
 from app.face_verification import verify_faces
 
 
-# -----------------------------
+
 # 1. Read ID image
-# -----------------------------
+
 with open("Rinad_Front_Id.jpeg", "rb") as f:
     id_bytes = f.read()
 
