@@ -1,0 +1,13 @@
+opencv-python==4.10.0.84
+fastapi
+uvicorn
+python-multipart
+easyocr
+ultralytics
+tensorflow==2.21.0
+tf-keras
+deepface
+numpy
+pillow
+requests
+streamlit
