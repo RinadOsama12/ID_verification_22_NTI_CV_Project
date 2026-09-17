@@ -1,53 +1,122 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-
-import numpy as np
-import cv2
+from fastapi import FastAPI, UploadFile, File
+from deepface.modules.exceptions import FaceNotDetected
 
 from app.model import predict_id
 from app.face_verification import verify_faces
 
+import cv2
+import numpy as np
 
-app = FastAPI(
-    title="ID Verification API",
-    description="Computer Vision API for ID verification",
-    version="1.0"
-)
+
+app = FastAPI()
 
 
 @app.get("/")
-def home():
-
+def root():
     return {
-        "message": "ID verification API is running"
+        "message": "ID Verification API is running"
     }
 
-from fastapi.concurrency import run_in_threadpool
 
 @app.post("/verify-face")
-async def verify_face(id_image: UploadFile = File(...), selfie: UploadFile = File(...)):
-    id_bytes = await id_image.read()
-    id_result = await run_in_threadpool(predict_id, id_bytes)
+async def verify_face(
+    id_image: UploadFile = File(...),
+    selfie: UploadFile = File(...)
+):
 
-    if not id_result["detected"]:
-        return {"verified": False, "id_detected": False, "message": "No ID detected"}
+    try:
 
-    id_crop = id_result["id_crop"]
-    if id_crop is None or id_crop.size == 0:
-        return {"verified": False, "id_detected": False, "message": "ID crop was empty"}
+        # -------------------------
+        # 1. Read ID
+        # -------------------------
 
-    selfie_bytes = await selfie.read()
-    selfie_array = np.frombuffer(selfie_bytes, np.uint8)
-    selfie_image = cv2.imdecode(selfie_array, cv2.IMREAD_COLOR)
+        id_bytes = await id_image.read()
 
-    if selfie_image is None:
-        raise HTTPException(status_code=400, detail="Invalid selfie image")
+        if not id_bytes:
+            return {
+                "verified": False,
+                "id_detected": False,
+                "message": "ID image is empty"
+            }
 
-    face_result = await run_in_threadpool(verify_faces, id_crop, selfie_image)
+        # -------------------------
+        # 2. YOLO
+        # -------------------------
 
-    return {
-        "verified": face_result["verified"],
-        "id_detected": True,
-        "id_confidence": id_result["confidence"],
-        "bbox": id_result["bbox"],
-        "face_distance": face_result["distance"],
-    }
+        yolo_result = predict_id(id_bytes)
+
+        if not yolo_result["detected"]:
+            return {
+                "verified": False,
+                "id_detected": False,
+                "message": yolo_result["message"]
+            }
+
+        # -------------------------
+        # 3. Read selfie
+        # -------------------------
+
+        selfie_bytes = await selfie.read()
+
+        if not selfie_bytes:
+            return {
+                "verified": False,
+                "id_detected": True,
+                "message": "Selfie image is empty"
+            }
+
+        selfie_array = np.frombuffer(
+            selfie_bytes,
+            np.uint8
+        )
+
+        selfie_image = cv2.imdecode(
+            selfie_array,
+            cv2.IMREAD_COLOR
+        )
+
+        if selfie_image is None:
+            return {
+                "verified": False,
+                "id_detected": True,
+                "message": "Could not decode selfie image"
+            }
+
+        # -------------------------
+        # 4. Face verification
+        # -------------------------
+
+        result = verify_faces(
+            yolo_result["id_crop"],
+            selfie_image
+        )
+
+        # -------------------------
+        # 5. Response
+        # -------------------------
+
+        return {
+            "verified": result["verified"],
+            "id_detected": True,
+            "face_distance": result["distance"],
+            "threshold": result["threshold"],
+            "yolo_confidence": yolo_result["confidence"]
+        }
+
+    except FaceNotDetected:
+
+        return {
+            "verified": False,
+            "id_detected": True,
+            "message": "Could not detect a face in the ID or selfie"
+        }
+
+    except Exception as e:
+
+        print("ERROR:", repr(e))
+
+        return {
+            "verified": False,
+            "id_detected": False,
+            "message": f"Verification failed: {str(e)}"
+        }
