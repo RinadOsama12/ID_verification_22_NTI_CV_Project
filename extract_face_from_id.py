@@ -7,10 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1nAd7oyBuylMkp7eNjV1E49AZTNq4zbMB
 """
 
-!pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python -q
-!pip install opencv-python-headless -q
 
-!pip install ultralytics roboflow -q
 
 from roboflow import Roboflow
 rf = Roboflow(api_key="uABs9vZdE4figY5Vdm8m")
